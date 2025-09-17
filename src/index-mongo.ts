@@ -13,6 +13,12 @@ app.get('/produtos', async (req:Request, res:Response) => {
     const produtos = await db.collection('produtos').find().toArray()
     res.json(produtos)
 })
+app.post('/produtos', async (req:Request, res:Response) => { 
+    const {nome, preco, urlfoto, descricao} = req.body
+    const produto = {nome}
+    const resultado = await db.collection('produtos').insertOne(produto)
+    res.json(201).json({nome, preco, urlfoto, descricao, _id:resultado.insertedId})
+})
 // Crianso o servidor na porta 8000 com express
 app.listen(8000, () => {
     console.log('Server is running on port 8000')
