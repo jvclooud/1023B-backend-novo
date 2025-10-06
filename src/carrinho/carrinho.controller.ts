@@ -18,36 +18,54 @@ interface Carrinho {
 }
 class CarrinhoController {
     //adicionarItem
-    async adicionarItem(req:Request, res:Response) {
+    async adicionarItem(req: Request, res: Response) {
         console.log("Chegou na rota de adicionar item ao carrinho");
         const { usuarioId, produtoId, quantidade } = req.body;
-         //Buscar o produto no banco de dados
+        // Buscar o produto no banco de dados
         const produto = await db.collection("produtos").findOne({ _id: ObjectId.createFromHexString(produtoId)});
         if (!produto) {
             return res.status(400).json({ message: "Produto não encontrado" });
         }
-        //Pegar o preço do produto
-        //Pegar o nome do produto
-        const precoUnitario = produto.preco; // Supondo que o produto tenha um campo 'preco'
-        const nome = produto.nome; // Supondo que o produto tenha um campo 'nome'
+        const precoUnitario = produto.preco;
+        const nome = produto.nome;
 
-
-        // Verificar se um carrinho com o usuário já existe
-        // Se não existir deve criar um novo carrinho
-        // Se existir, deve adicionar o item ao carrinho existente
-
-        // Calcular o total do carrinho
-
-        // Atualizar a data de atualização do carrinho
-
+        // Verificar se já existe carrinho para o usuário
+        let carrinho = await db.collection("carrinhos").findOne({ usuarioId });
+        const novoItem: ItemCarrinho = {
+            produtoId,
+            quantidade,
+            precoUnitario,
+            nome
+        };
+        if (!carrinho) {
+            // Criar novo carrinho
+            const novoCarrinho = {
+                usuarioId,
+                itens: [novoItem], 
+                dataAtualizacao: new Date(),
+                total: precoUnitario * quantidade
+            };
+            await db.collection("carrinhos").insertOne(novoCarrinho);
+        } else {
+            // Verifica se o produto já está no carrinho
+            const index = carrinho.itens.findIndex((item: ItemCarrinho) => item.produtoId === produtoId);
+            if (index > -1) {
+                // Atualiza a quantidade do item existente
+                carrinho.itens[index].quantidade += quantidade;
+            } else {
+                // Adiciona novo item
+                carrinho.itens.push(novoItem);
+            }
+            // Recalcula o total
+            carrinho.total = carrinho.itens.reduce((acc: number, item: ItemCarrinho) => acc + item.precoUnitario * item.quantidade, 0);
+            carrinho.dataAtualizacao = new Date();
+            await db.collection("carrinhos").updateOne(
+                { usuarioId },
+                { $set: { itens: carrinho.itens, total: carrinho.total, dataAtualizacao: carrinho.dataAtualizacao } }
+            );
+        }
         res.status(200).json({ message: "Item adicionado ao carrinho com sucesso" });
-        
-
-        
-
-        
-
-    } 
+    }
        
         
 
