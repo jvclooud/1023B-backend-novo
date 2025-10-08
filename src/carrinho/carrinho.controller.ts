@@ -22,7 +22,7 @@ class CarrinhoController {
         console.log("Chegou na rota de adicionar item ao carrinho");
         const { usuarioId, produtoId, quantidade } = req.body;
         // Buscar o produto no banco de dados
-        const produto = await db.collection("produtos").findOne({ _id: ObjectId.createFromHexString(produtoId)});
+        const produto = await db.collection("produtos").findOne({ _id: ObjectId.createFromHexString(produtoId) });
         if (!produto) {
             return res.status(400).json({ message: "Produto não encontrado" });
         }
@@ -41,7 +41,7 @@ class CarrinhoController {
             // Criar novo carrinho
             const novoCarrinho = {
                 usuarioId,
-                itens: [novoItem], 
+                itens: [novoItem],
                 dataAtualizacao: new Date(),
                 total: precoUnitario * quantidade
             };
@@ -65,9 +65,24 @@ class CarrinhoController {
             );
         }
         res.status(200).json({ message: "Item adicionado ao carrinho com sucesso" });
+
     }
-       
-        
+    removerItem(req: import('express').Request, res: import('express').Response) {
+        // Implemente a lógica para remover um item do carrinho aqui
+        res.status(200).json({ message: 'Item removido do carrinho.' });
+    }
+    listar(req: Request, res: Response) {
+        // implementação
+    }
+
+    remover(req: Request, res: Response) {
+        // Implemente a lógica para remover o carrinho do usuário
+        const { usuarioId } = req.params;
+        // Exemplo de resposta
+        res.status(200).json({ message: `Carrinho do usuário ${usuarioId} removido com sucesso.` });
+    }
+
+
 
 
 
